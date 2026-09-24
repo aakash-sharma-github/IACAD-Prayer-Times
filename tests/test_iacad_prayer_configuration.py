@@ -1,9 +1,10 @@
 """Tests for config-entry data and user options merging."""
 
-from pathlib import Path
 import sys
-from types import ModuleType
 import unittest
+from pathlib import Path
+from types import ModuleType
+from typing import ClassVar
 
 CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
@@ -11,13 +12,13 @@ package = ModuleType("iacad_prayer")
 package.__path__ = [str(INTEGRATION_PATH)]
 sys.modules.setdefault("iacad_prayer", package)
 
-from iacad_prayer.configuration import effective_entry_data  # noqa: E402
+from iacad_prayer.configuration import effective_entry_data
 
 
 class FakeEntry:
     """Minimal config entry with initial data and user options."""
 
-    data = {
+    data: ClassVar = {
         "latitude": 25.2048,
         "longitude": 55.2708,
         "timezone": "Asia/Dubai",
@@ -25,7 +26,7 @@ class FakeEntry:
         "madhab": "shafi",
         "high_latitude_rule": "middle_of_the_night",
     }
-    options = {
+    options: ClassVar = {
         "latitude": 51.5072,
         "longitude": -0.1276,
         "timezone": "Europe/London",

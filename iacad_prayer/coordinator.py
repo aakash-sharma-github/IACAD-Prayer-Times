@@ -18,6 +18,7 @@ from .api import (
     PrayerTimesApiError,
     PrayerTimesApiResponseError,
 )
+from .configuration import effective_entry_data
 from .const import (
     CONF_CALCULATION_METHOD,
     CONF_HIGH_LATITUDE_RULE,
@@ -28,7 +29,6 @@ from .const import (
     DATE_CHECK_INTERVAL,
     DOMAIN,
 )
-from .configuration import effective_entry_data
 from .models import PrayerTimesData, PrayerTimesRequest
 
 _LOGGER = logging.getLogger(__name__)

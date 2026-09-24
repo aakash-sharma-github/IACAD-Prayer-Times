@@ -8,7 +8,7 @@ import unittest
 from datetime import date, datetime
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, ClassVar
 
 CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
@@ -74,7 +74,7 @@ class FakeEntry:
     """Minimal config entry containing immutable configuration data."""
 
     data = ENTRY_DATA
-    options = {}
+    options: ClassVar = {}
 
 
 def prayer_times_data(day: date) -> PrayerTimesData:

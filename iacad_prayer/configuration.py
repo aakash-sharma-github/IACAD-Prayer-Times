@@ -1,6 +1,5 @@
 """Config-entry configuration helpers."""
 
-from collections.abc import Mapping
 from typing import Any
 
 

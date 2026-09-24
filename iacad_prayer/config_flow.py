@@ -11,7 +11,6 @@ from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
 from .configuration import effective_entry_data
-
 from .const import (
     CALCULATION_METHODS,
     CONF_CALCULATION_METHOD,
