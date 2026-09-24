@@ -9,6 +9,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, OptionsFlowWithReload
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import config_validation as cv
 
 from .configuration import effective_entry_data
 from .const import (
@@ -26,15 +27,6 @@ from .const import (
     HIGH_LATITUDE_RULES,
     MADHABS,
 )
-from .validation import is_valid_timezone
-
-
-def _validate_timezone(value: str) -> str:
-    """Validate that a value is an IANA timezone name."""
-    if not is_valid_timezone(value):
-        raise vol.Invalid("invalid_timezone")
-    return value
-
 
 DATA_SCHEMA = vol.Schema(
     {
@@ -44,7 +36,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_LONGITUDE): vol.All(
             vol.Coerce(float), vol.Range(min=-180, max=180)
         ),
-        vol.Required(CONF_TIMEZONE): vol.All(str, _validate_timezone),
+        vol.Required(CONF_TIMEZONE): cv.time_zone,
         vol.Required(
             CONF_CALCULATION_METHOD, default=DEFAULT_CALCULATION_METHOD
         ): vol.In(CALCULATION_METHODS),
