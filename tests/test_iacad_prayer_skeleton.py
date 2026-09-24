@@ -31,6 +31,26 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertEqual(manifest["integration_type"], "service")
         self.assertEqual(manifest["documentation"], "https://www.aakashsharma.com.np")
 
+    def test_hacs_metadata_declares_the_existing_repository_layout(self) -> None:
+        hacs = json.loads((CUSTOM_COMPONENTS_PATH / "hacs.json").read_text())
+
+        self.assertEqual(hacs, {"content_in_root": True})
+
+    def test_hacs_brand_icon_is_a_png_asset(self) -> None:
+        icon = (CUSTOM_COMPONENTS_PATH / "brand" / "icon.png").read_bytes()
+
+        self.assertTrue(icon.startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_readme_documents_installation_and_supported_home_assistant_version(
+        self,
+    ) -> None:
+        readme = (CUSTOM_COMPONENTS_PATH / "README.md").read_text()
+
+        self.assertIn("Home Assistant **2025.8.0 or later**", readme)
+        self.assertIn("## Install with HACS", readme)
+        self.assertIn("## Manual installation", readme)
+        self.assertIn("Aakash Sharma", readme)
+
     def test_translation_files_have_matching_english_content(self) -> None:
         strings = json.loads((INTEGRATION_PATH / "strings.json").read_text())
         english = json.loads(
