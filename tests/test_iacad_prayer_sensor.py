@@ -72,16 +72,17 @@ device_registry.DeviceInfo = dict
 entity_platform.AddEntitiesCallback = object
 event_helper.async_track_time_interval = lambda *args: lambda: None
 update_coordinator.CoordinatorEntity = FakeCoordinatorEntity
-sys.modules.setdefault("homeassistant", homeassistant)
-sys.modules.setdefault("homeassistant.components", components)
-sys.modules.setdefault("homeassistant.components.sensor", sensor_component)
-sys.modules.setdefault("homeassistant.config_entries", config_entries)
-sys.modules.setdefault("homeassistant.core", core)
-sys.modules.setdefault("homeassistant.helpers", ModuleType("homeassistant.helpers"))
-sys.modules.setdefault("homeassistant.helpers.device_registry", device_registry)
-sys.modules.setdefault("homeassistant.helpers.entity_platform", entity_platform)
-sys.modules.setdefault("homeassistant.helpers.event", event_helper)
-sys.modules.setdefault("homeassistant.helpers.update_coordinator", update_coordinator)
+sys.modules["homeassistant"] = homeassistant
+sys.modules["homeassistant.components"] = components
+sys.modules["homeassistant.components.sensor"] = sensor_component
+sys.modules["homeassistant.config_entries"] = config_entries
+sys.modules["homeassistant.core"] = core
+sys.modules["homeassistant.helpers"] = ModuleType("homeassistant.helpers")
+sys.modules["homeassistant.helpers.device_registry"] = device_registry
+sys.modules["homeassistant.helpers.entity_platform"] = entity_platform
+sys.modules["homeassistant.helpers.event"] = event_helper
+sys.modules["homeassistant.helpers.update_coordinator"] = update_coordinator
+sys.modules.pop("iacad_prayer.sensor", None)
 
 coordinator_module = ModuleType("iacad_prayer.coordinator")
 coordinator_module.PrayerTimesCoordinator = object

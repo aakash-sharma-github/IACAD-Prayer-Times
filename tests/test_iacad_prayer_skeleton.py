@@ -7,7 +7,9 @@ from pathlib import Path
 
 CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
-sys.path.insert(0, str(CUSTOM_COMPONENTS_PATH))
+package = type(sys)("iacad_prayer")
+package.__path__ = [str(INTEGRATION_PATH)]
+sys.modules.setdefault("iacad_prayer", package)
 
 from iacad_prayer.const import (
     CALCULATION_METHODS,
@@ -27,6 +29,7 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertEqual(manifest["name"], "IACAD Prayer Times")
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["integration_type"], "service")
+        self.assertEqual(manifest["documentation"], "https://www.aakashsharma.com.np")
 
     def test_translation_files_have_matching_english_content(self) -> None:
         strings = json.loads((INTEGRATION_PATH / "strings.json").read_text())

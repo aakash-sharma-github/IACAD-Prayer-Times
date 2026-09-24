@@ -6,6 +6,14 @@ import asyncio
 from datetime import date
 from typing import TYPE_CHECKING, Any, Protocol
 
+try:
+    from aiohttp import ClientError
+except ImportError:  # pragma: no cover - Home Assistant installs aiohttp.
+
+    class ClientError(Exception):
+        """Fallback for running the standalone unit tests without aiohttp."""
+
+
 from .const import API_BASE_URL
 from .models import PrayerTimesData, PrayerTimesRequest, PrayerTimesResponseError
 
@@ -116,7 +124,7 @@ class PrayerTimesApiClient:
                     ) from err
         except asyncio.TimeoutError as err:
             raise PrayerTimesApiTimeoutError("API request timed out") from err
-        except OSError as err:
+        except (ClientError, OSError) as err:
             raise PrayerTimesApiConnectionError("Unable to connect to the API") from err
 
         if response.status == 429:

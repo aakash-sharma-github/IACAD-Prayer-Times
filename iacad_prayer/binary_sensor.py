@@ -89,7 +89,7 @@ class PrayerActiveBinarySensor(
         self._attr_unique_id = f"{entry_id}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
-            manufacturer="azanAPI",
+            manufacturer="Aakash Sharma",
             model="IACAD Prayer Times",
             name="IACAD Prayer Times",
         )

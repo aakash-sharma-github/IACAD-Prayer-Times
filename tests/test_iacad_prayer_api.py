@@ -17,6 +17,7 @@ package.__path__ = [str(INTEGRATION_PATH)]
 sys.modules.setdefault("iacad_prayer", package)
 
 from iacad_prayer.api import (
+    ClientError,
     PrayerTimesApiClient,
     PrayerTimesApiConnectionError,
     PrayerTimesApiRateLimitError,
@@ -105,6 +106,13 @@ class FailingSession:
         raise OSError("network unreachable")
 
 
+class ClientErrorSession:
+    """Session that raises an aiohttp-compatible connection error."""
+
+    def get(self, url: str, **kwargs: Any) -> FakeResponse:
+        raise ClientError("connection reset")
+
+
 class TimeoutResponse(FakeResponse):
     """Response context that simulates an HTTP timeout."""
 
@@ -179,6 +187,12 @@ class PrayerTimesApiClientTest(unittest.TestCase):
                 PrayerTimesApiClient(FailingSession(), REQUEST).async_get_prayer_times(
                     date(2026, 9, 23)
                 )
+            )
+        with self.assertRaises(PrayerTimesApiConnectionError):
+            asyncio.run(
+                PrayerTimesApiClient(
+                    ClientErrorSession(), REQUEST
+                ).async_get_prayer_times(date(2026, 9, 23))
             )
         with self.assertRaisesRegex(PrayerTimesApiResponseError, "valid JSON"):
             asyncio.run(

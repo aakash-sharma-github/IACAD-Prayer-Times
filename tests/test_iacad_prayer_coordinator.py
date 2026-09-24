@@ -49,12 +49,13 @@ core.callback = lambda function: function
 event_helper.async_track_point_in_time = lambda *args: lambda: None
 update_coordinator.DataUpdateCoordinator = FakeDataUpdateCoordinator
 update_coordinator.UpdateFailed = FakeUpdateFailed
-sys.modules.setdefault("homeassistant", homeassistant)
-sys.modules.setdefault("homeassistant.config_entries", config_entries)
-sys.modules.setdefault("homeassistant.core", core)
-sys.modules.setdefault("homeassistant.helpers", ModuleType("homeassistant.helpers"))
-sys.modules.setdefault("homeassistant.helpers.event", event_helper)
-sys.modules.setdefault("homeassistant.helpers.update_coordinator", update_coordinator)
+sys.modules["homeassistant"] = homeassistant
+sys.modules["homeassistant.config_entries"] = config_entries
+sys.modules["homeassistant.core"] = core
+sys.modules["homeassistant.helpers"] = ModuleType("homeassistant.helpers")
+sys.modules["homeassistant.helpers.event"] = event_helper
+sys.modules["homeassistant.helpers.update_coordinator"] = update_coordinator
+sys.modules.pop("iacad_prayer.coordinator", None)
 
 from iacad_prayer.api import PrayerTimesApiConnectionError
 from iacad_prayer.coordinator import PrayerTimesCoordinator

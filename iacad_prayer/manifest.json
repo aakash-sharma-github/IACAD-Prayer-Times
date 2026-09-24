@@ -3,7 +3,7 @@
   "name": "IACAD Prayer Times",
   "codeowners": ["@aakash-sharma-github"],
   "config_flow": true,
-  "documentation": "https://api.aakashsharma.com.np/docs",
+  "documentation": "https://www.aakashsharma.com.np",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/aakash-sharma-github/Prayer_time_api/issues",

@@ -36,7 +36,7 @@ vol.Coerce = lambda value: value
 vol.Range = lambda **kwargs: kwargs
 vol.In = lambda values: values
 vol.Invalid = ValueError
-sys.modules.setdefault("voluptuous", vol)
+sys.modules["voluptuous"] = vol
 
 
 class FakeConfigFlow:
@@ -80,10 +80,11 @@ config_entries.ConfigEntry = object
 config_entries.OptionsFlowWithReload = FakeOptionsFlowWithReload
 core.callback = lambda function: function
 data_entry_flow.FlowResult = dict[str, Any]
-sys.modules.setdefault("homeassistant", homeassistant)
-sys.modules.setdefault("homeassistant.config_entries", config_entries)
-sys.modules.setdefault("homeassistant.core", core)
-sys.modules.setdefault("homeassistant.data_entry_flow", data_entry_flow)
+sys.modules["homeassistant"] = homeassistant
+sys.modules["homeassistant.config_entries"] = config_entries
+sys.modules["homeassistant.core"] = core
+sys.modules["homeassistant.data_entry_flow"] = data_entry_flow
+sys.modules.pop("iacad_prayer.config_flow", None)
 
 from iacad_prayer.config_flow import IacadPrayerOptionsFlow
 
