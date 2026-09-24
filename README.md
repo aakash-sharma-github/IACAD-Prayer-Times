@@ -76,6 +76,91 @@ An `* Active` binary sensor is `on` from the final API Azan time (including an
 adjustment) until, but not including, one minute later. These entities are
 intended for Azan automations; the integration does not play audio itself.
 
+## Azan automations
+
+Use an `* Active` binary sensor as a state trigger. It changes from `off` to
+`on` exactly once at the final Azan time, including any API adjustment. Do not
+trigger audio from the timestamp or `* Time` sensors.
+
+### Prepare and test audio playback
+
+1. Place your audio file at `<Home Assistant config>/media/azan.mp3`.
+2. In **Developer tools > Actions**, run `media_player.play_media` against the
+   intended speaker with the media source URI below. Confirm that it plays
+   before creating an automation.
+3. In **Developer tools > States**, find the actual entity ID of the desired
+   `Fajr active` entity and your media player. Entity IDs differ if you renamed
+   either entity, so replace both placeholders in the examples.
+
+The local media source URI for the example file is:
+
+```text
+media-source://media_source/local/azan.mp3
+```
+
+### One-prayer template
+
+Paste this into a new automation's YAML editor, then replace both placeholders.
+
+```yaml
+alias: Play Azan at Fajr
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_FAJR_ACTIVE_ENTITY
+    to: "on"
+actions:
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.REPLACE_WITH_YOUR_SPEAKER
+    data:
+      media_content_id: media-source://media_source/local/azan.mp3
+      media_content_type: music
+mode: single
+max_exceeded: silent
+```
+
+`mode: single` prevents an overlapping duplicate run while the same automation
+is still playing. Use a separate automation only when a prayer needs a
+different speaker, audio file, or volume behavior.
+
+### All five prayers in one automation
+
+Replace each placeholder with the corresponding entity ID from **Developer
+tools > States**. This version plays the same audio on the same speaker for all
+five Azan prayers.
+
+```yaml
+alias: Play Azan at prayer times
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_FAJR_ACTIVE_ENTITY
+    to: "on"
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_DHUHR_ACTIVE_ENTITY
+    to: "on"
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_ASR_ACTIVE_ENTITY
+    to: "on"
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_MAGHRIB_ACTIVE_ENTITY
+    to: "on"
+  - trigger: state
+    entity_id: binary_sensor.REPLACE_WITH_YOUR_ISHA_ACTIVE_ENTITY
+    to: "on"
+actions:
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.REPLACE_WITH_YOUR_SPEAKER
+    data:
+      media_content_id: media-source://media_source/local/azan.mp3
+      media_content_type: music
+mode: single
+max_exceeded: silent
+```
+
+If your speaker requires a different media type or URL, first use its own
+integration documentation and test the action in **Developer tools > Actions**.
+
 ## Troubleshooting and privacy
 
 If the API cannot be reached or returns invalid data, coordinator-backed

@@ -55,6 +55,9 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertIn("## Install with HACS", readme)
         self.assertIn("## Manual installation", readme)
         self.assertIn("## Verify in Home Assistant", readme)
+        self.assertIn("## Azan automations", readme)
+        self.assertIn("media_player.play_media", readme)
+        self.assertIn("mode: single", readme)
         self.assertIn("Aakash Sharma", readme)
 
     def test_github_workflow_runs_hacs_and_home_assistant_validation(self) -> None:
