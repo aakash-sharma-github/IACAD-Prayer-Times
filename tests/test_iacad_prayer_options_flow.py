@@ -19,8 +19,6 @@ homeassistant = ModuleType("homeassistant")
 config_entries = ModuleType("homeassistant.config_entries")
 core = ModuleType("homeassistant.core")
 data_entry_flow = ModuleType("homeassistant.data_entry_flow")
-helpers = ModuleType("homeassistant.helpers")
-config_validation = ModuleType("homeassistant.helpers.config_validation")
 vol = ModuleType("voluptuous")
 
 
@@ -82,16 +80,13 @@ config_entries.ConfigEntry = object
 config_entries.OptionsFlowWithReload = FakeOptionsFlowWithReload
 core.callback = lambda function: function
 data_entry_flow.FlowResult = dict[str, Any]
-config_validation.time_zone = "home_assistant_timezone_validator"
 sys.modules["homeassistant"] = homeassistant
 sys.modules["homeassistant.config_entries"] = config_entries
 sys.modules["homeassistant.core"] = core
 sys.modules["homeassistant.data_entry_flow"] = data_entry_flow
-sys.modules["homeassistant.helpers"] = helpers
-sys.modules["homeassistant.helpers.config_validation"] = config_validation
 sys.modules.pop("iacad_prayer.config_flow", None)
 
-from iacad_prayer.config_flow import DATA_SCHEMA, IacadPrayerOptionsFlow
+from iacad_prayer.config_flow import IacadPrayerConfigFlow, IacadPrayerOptionsFlow
 
 
 class FakeEntry:
@@ -120,8 +115,24 @@ class OptionsFlowTest(unittest.TestCase):
         self.assertEqual(result["type"], "form")
         self.assertEqual(result["step_id"], "init")
 
-    def test_uses_home_assistant_timezone_validator_in_the_form_schema(self) -> None:
-        self.assertIn("home_assistant_timezone_validator", DATA_SCHEMA.value.values())
+    def test_invalid_timezone_returns_a_serializable_field_error(self) -> None:
+        flow = IacadPrayerConfigFlow()
+        user_input = dict(FakeEntry.data, timezone="Not/ARealTimezone")
+
+        result = asyncio.run(flow.async_step_user(user_input))
+
+        self.assertEqual(result["type"], "form")
+        self.assertEqual(result["errors"], {"timezone": "invalid_timezone"})
+
+    def test_options_invalid_timezone_returns_a_field_error(self) -> None:
+        flow = IacadPrayerOptionsFlow()
+        flow.config_entry = FakeEntry()
+        user_input = dict(FakeEntry.data, timezone="Not/ARealTimezone")
+
+        result = asyncio.run(flow.async_step_init(user_input))
+
+        self.assertEqual(result["type"], "form")
+        self.assertEqual(result["errors"], {"timezone": "invalid_timezone"})
 
     def test_submitted_options_are_created_as_options_data(self) -> None:
         flow = IacadPrayerOptionsFlow()

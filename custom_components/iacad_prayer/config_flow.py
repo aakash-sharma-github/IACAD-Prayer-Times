@@ -9,7 +9,6 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, OptionsFlowWithReload
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import config_validation as cv
 
 from .configuration import effective_entry_data
 from .const import (
@@ -27,6 +26,7 @@ from .const import (
     HIGH_LATITUDE_RULES,
     MADHABS,
 )
+from .validation import is_valid_timezone
 
 DATA_SCHEMA = vol.Schema(
     {
@@ -36,7 +36,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_LONGITUDE): vol.All(
             vol.Coerce(float), vol.Range(min=-180, max=180)
         ),
-        vol.Required(CONF_TIMEZONE): cv.time_zone,
+        vol.Required(CONF_TIMEZONE): str,
         vol.Required(
             CONF_CALCULATION_METHOD, default=DEFAULT_CALCULATION_METHOD
         ): vol.In(CALCULATION_METHODS),
@@ -64,6 +64,12 @@ class IacadPrayerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the initial user setup step."""
         if user_input is not None:
+            if not is_valid_timezone(user_input[CONF_TIMEZONE]):
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=DATA_SCHEMA,
+                    errors={CONF_TIMEZONE: "invalid_timezone"},
+                )
             await self.async_set_unique_id(self._unique_id(user_input))
             self._abort_if_unique_id_configured()
             return self.async_create_entry(title="IACAD Prayer Times", data=user_input)
@@ -93,6 +99,14 @@ class IacadPrayerOptionsFlow(OptionsFlowWithReload):
     ) -> FlowResult:
         """Show and save the editable location and calculation settings."""
         if user_input is not None:
+            if not is_valid_timezone(user_input[CONF_TIMEZONE]):
+                return self.async_show_form(
+                    step_id="init",
+                    data_schema=self.add_suggested_values_to_schema(
+                        DATA_SCHEMA, user_input
+                    ),
+                    errors={CONF_TIMEZONE: "invalid_timezone"},
+                )
             return self.async_create_entry(data=user_input)
 
         return self.async_show_form(
