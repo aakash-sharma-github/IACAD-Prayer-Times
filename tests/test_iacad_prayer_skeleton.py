@@ -35,6 +35,14 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
             manifest["issue_tracker"],
             "https://github.com/aakash-sharma-github/IACAD-Prayer-Times/issues",
         )
+        self.assertEqual(manifest["version"], "0.1.0")
+
+    def test_changelog_documents_the_manifest_release(self) -> None:
+        manifest = json.loads((INTEGRATION_PATH / "manifest.json").read_text())
+        changelog = (REPOSITORY_ROOT / "CHANGELOG.md").read_text()
+
+        self.assertIn(f"## [{manifest['version']}]", changelog)
+        self.assertIn("Initial public release.", changelog)
 
     def test_hacs_metadata_declares_the_existing_repository_layout(self) -> None:
         hacs = json.loads((REPOSITORY_ROOT / "hacs.json").read_text())
@@ -59,6 +67,8 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertIn("media_player.play_media", readme)
         self.assertIn("mode: single", readme)
         self.assertIn("Aakash Sharma", readme)
+        self.assertIn("## Releases and versioning", readme)
+        self.assertIn("git tag -a v0.1.0", readme)
 
     def test_github_workflow_runs_hacs_and_home_assistant_validation(self) -> None:
         workflow = (

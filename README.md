@@ -191,5 +191,21 @@ The integration uses Semantic Versioning in `manifest.json`.
 - Major releases may include breaking changes and will document migration steps.
 
 Publish a matching GitHub release and tag for each released manifest version.
-HACS can use the default branch before the first release; publishing is not
-performed by this repository.
+HACS shows a commit when the repository has no GitHub release. To publish the
+first version shown to users:
+
+1. Commit and push the release-ready changes.
+2. Create an annotated tag named `v0.1.0` on that commit and push the tag:
+
+   ```bash
+   git tag -a v0.1.0 -m "Adhan Prayer Time v0.1.0"
+   git push origin v0.1.0
+   ```
+
+3. On GitHub, create a release from `v0.1.0`, use the corresponding
+   `CHANGELOG.md` section as its notes, and publish it.
+4. In HACS, select **Download** for the integration and choose `v0.1.0`.
+
+For later releases, update `manifest.json`, add the next changelog section,
+and create a matching `vX.Y.Z` GitHub tag and release. Repository publishing
+is intentionally not performed by this integration.
