@@ -6,7 +6,11 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry, OptionsFlowWithReload
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+
+from .configuration import effective_entry_data
 
 from .const import (
     CALCULATION_METHODS,
@@ -58,6 +62,12 @@ class IacadPrayerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> IacadPrayerOptionsFlow:
+        """Create the options flow for an existing config entry."""
+        return IacadPrayerOptionsFlow()
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -81,4 +91,22 @@ class IacadPrayerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data[CONF_MADHAB],
                 data[CONF_HIGH_LATITUDE_RULE],
             )
+        )
+
+
+class IacadPrayerOptionsFlow(OptionsFlowWithReload):
+    """Handle user-editable prayer-time configuration options."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Show and save the editable location and calculation settings."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                DATA_SCHEMA, effective_entry_data(self.config_entry)
+            ),
         )

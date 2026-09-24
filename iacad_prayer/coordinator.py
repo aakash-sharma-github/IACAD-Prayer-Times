@@ -28,6 +28,7 @@ from .const import (
     DATE_CHECK_INTERVAL,
     DOMAIN,
 )
+from .configuration import effective_entry_data
 from .models import PrayerTimesData, PrayerTimesRequest
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,19 +62,20 @@ class PrayerTimesCoordinator(DataUpdateCoordinator[PrayerTimesData]):
             update_interval=DATE_CHECK_INTERVAL,
             always_update=False,
         )
-        self._timezone = ZoneInfo(entry.data[CONF_TIMEZONE])
+        config = effective_entry_data(entry)
+        self._timezone = ZoneInfo(config[CONF_TIMEZONE])
         self._date_provider = date_provider
         self._schedule_at = schedule_at
         self._unsub_midnight_refresh: Callable[[], None] | None = None
         self._api_client = api_client or PrayerTimesApiClient.from_hass(
             hass,
             PrayerTimesRequest(
-                latitude=entry.data[CONF_LATITUDE],
-                longitude=entry.data[CONF_LONGITUDE],
-                timezone=entry.data[CONF_TIMEZONE],
-                calculation_method=entry.data[CONF_CALCULATION_METHOD],
-                madhab=entry.data[CONF_MADHAB],
-                high_latitude_rule=entry.data[CONF_HIGH_LATITUDE_RULE],
+                latitude=config[CONF_LATITUDE],
+                longitude=config[CONF_LONGITUDE],
+                timezone=config[CONF_TIMEZONE],
+                calculation_method=config[CONF_CALCULATION_METHOD],
+                madhab=config[CONF_MADHAB],
+                high_latitude_rule=config[CONF_HIGH_LATITUDE_RULE],
             ),
         )
 

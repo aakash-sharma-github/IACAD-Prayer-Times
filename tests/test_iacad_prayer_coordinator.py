@@ -74,6 +74,7 @@ class FakeEntry:
     """Minimal config entry containing immutable configuration data."""
 
     data = ENTRY_DATA
+    options = {}
 
 
 def prayer_times_data(day: date) -> PrayerTimesData:

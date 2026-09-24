@@ -30,6 +30,25 @@
       "name": "IACAD Prayer Times"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update IACAD Prayer Times",
+        "description": "Change the location or calculation settings used for prayer times.",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "timezone": "Timezone",
+          "calculation_method": "Calculation method",
+          "madhab": "Madhab",
+          "high_latitude_rule": "High-latitude rule"
+        },
+        "data_description": {
+          "timezone": "Use an IANA timezone, such as Asia/Dubai."
+        }
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "fajr_active": {"name": "Fajr active"},
