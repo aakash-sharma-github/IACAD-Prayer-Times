@@ -2,6 +2,11 @@
 
 All notable changes to Adhan Prayer Time are documented in this file.
 
+## [0.1.1] - 2026-09-24
+
+- Documents the HACS update, full-restart, and config-entry reload workflow.
+- Documents the Semantic Versioning bump and GitHub release process.
+
 ## [0.1.0] - 2026-09-24
 
 Initial public release.

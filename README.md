@@ -45,6 +45,21 @@ The configuration flow asks for:
 All settings can later be changed through the integration's **Configure**
 option. Saving options reloads the entry automatically.
 
+## Updating and reloading
+
+Use the appropriate action for what changed:
+
+| Change | Required action |
+| --- | --- |
+| Settings changed through **Configure** | Nothing else; the integration reloads automatically. |
+| The integration is temporarily unavailable | Reload the integration from its three-dot menu, or run the **Reload config entry** action. |
+| A HACS download or manual file update changed integration Python code | Restart Home Assistant. |
+
+After HACS downloads an update, select **Settings > System > Restart Home
+Assistant**. A config-entry reload reconnects an already loaded integration,
+but it does not reliably load new Python source files. A full restart is
+therefore required after an integration code update.
+
 ## Name migration
 
 This integration was previously displayed as **IACAD Prayer Times** and
@@ -184,28 +199,32 @@ Report integration issues at the configured
 
 ## Releases and versioning
 
-The integration uses Semantic Versioning in `manifest.json`.
+The integration uses Semantic Versioning in `manifest.json`; phase numbers
+are project milestones, not version numbers.
 
-- Patch releases fix bugs without changing configuration or entity contracts.
+- Patch releases make backward-compatible fixes, documentation, or maintenance
+  changes.
 - Minor releases add backward-compatible functionality.
 - Major releases may include breaking changes and will document migration steps.
 
-Publish a matching GitHub release and tag for each released manifest version.
-HACS shows a commit when the repository has no GitHub release. To publish the
-first version shown to users:
+For every release, update all three version references together:
 
-1. Commit and push the release-ready changes.
-2. Create an annotated tag named `v0.1.0` on that commit and push the tag:
+1. Set `custom_components/iacad_prayer/manifest.json` to the new version.
+2. Add a matching `## [X.Y.Z]` section at the top of `CHANGELOG.md`.
+3. Commit and push the release-ready changes.
+4. Create and push an annotated matching tag. The current release is
+   `v0.1.1`:
 
    ```bash
-   git tag -a v0.1.0 -m "Adhan Prayer Time v0.1.0"
-   git push origin v0.1.0
+   git tag -a v0.1.1 -m "Adhan Prayer Time v0.1.1"
+   git push origin v0.1.1
    ```
 
-3. On GitHub, create a release from `v0.1.0`, use the corresponding
+5. On GitHub, create a release from `v0.1.1`, use the corresponding
    `CHANGELOG.md` section as its notes, and publish it.
-4. In HACS, select **Download** for the integration and choose `v0.1.0`.
+6. In HACS, select **Download** for the integration and choose `v0.1.1`.
 
-For later releases, update `manifest.json`, add the next changelog section,
-and create a matching `vX.Y.Z` GitHub tag and release. Repository publishing
+For example, the next bug-fix or documentation release after `0.1.1` is
+`0.1.2`; the next backward-compatible feature release is `0.2.0`. HACS
+shows a commit when the repository has no GitHub release. Repository publishing
 is intentionally not performed by this integration.

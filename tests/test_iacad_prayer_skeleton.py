@@ -35,7 +35,7 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
             manifest["issue_tracker"],
             "https://github.com/aakash-sharma-github/IACAD-Prayer-Times/issues",
         )
-        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertEqual(manifest["version"], "0.1.1")
 
     def test_changelog_documents_the_manifest_release(self) -> None:
         manifest = json.loads((INTEGRATION_PATH / "manifest.json").read_text())
@@ -68,7 +68,9 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertIn("mode: single", readme)
         self.assertIn("Aakash Sharma", readme)
         self.assertIn("## Releases and versioning", readme)
-        self.assertIn("git tag -a v0.1.0", readme)
+        self.assertIn("## Updating and reloading", readme)
+        self.assertIn("Restart Home Assistant", readme)
+        self.assertIn("git tag -a v0.1.1", readme)
 
     def test_github_workflow_runs_hacs_and_home_assistant_validation(self) -> None:
         workflow = (
