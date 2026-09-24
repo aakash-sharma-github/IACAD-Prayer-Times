@@ -82,7 +82,7 @@ If the API cannot be reached or returns invalid data, coordinator-backed
 entities become unavailable and retry on the normal update schedule. Downloaded
 diagnostics redact latitude and longitude.
 
-For API details, see the [azanAPI documentation](https://api.aakashsharma.com.np/docs).
+For API details, see the [azanAPI documentation](https://azanapi-docs.aakashsharma.com.np/).
 Report integration issues at the configured
 [issue tracker](https://github.com/aakash-sharma-github/IACAD-Prayer-Times/issues).
 
