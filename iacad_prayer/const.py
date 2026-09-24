@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "iacad_prayer"
+PLATFORMS: Final = ("sensor",)
 
 CONF_LATITUDE: Final = "latitude"
 CONF_LONGITUDE: Final = "longitude"

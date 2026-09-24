@@ -24,5 +24,21 @@
     "error": {
       "invalid_timezone": "Enter a valid IANA timezone."
     }
+  },
+  "device": {
+    "prayer_times": {
+      "name": "IACAD Prayer Times"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "fajr": {"name": "Fajr"},
+      "sunrise": {"name": "Sunrise"},
+      "dhuhr": {"name": "Dhuhr"},
+      "asr": {"name": "Asr"},
+      "sunset": {"name": "Sunset"},
+      "maghrib": {"name": "Maghrib"},
+      "isha": {"name": "Isha"}
+    }
   }
 }
