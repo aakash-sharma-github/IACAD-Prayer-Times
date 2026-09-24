@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -47,6 +48,9 @@ class PrayerTimesCoordinator(DataUpdateCoordinator[PrayerTimesData]):
         *,
         api_client: PrayerTimesApiClient | None = None,
         date_provider: Callable[[ZoneInfo], date] = _current_date,
+        schedule_at: Callable[
+            [HomeAssistant, Callable[[datetime], None], datetime], Callable[[], None]
+        ] = async_track_point_in_time,
     ) -> None:
         """Initialize the coordinator for one configuration entry."""
         super().__init__(
@@ -59,6 +63,8 @@ class PrayerTimesCoordinator(DataUpdateCoordinator[PrayerTimesData]):
         )
         self._timezone = ZoneInfo(entry.data[CONF_TIMEZONE])
         self._date_provider = date_provider
+        self._schedule_at = schedule_at
+        self._unsub_midnight_refresh: Callable[[], None] | None = None
         self._api_client = api_client or PrayerTimesApiClient.from_hass(
             hass,
             PrayerTimesRequest(
@@ -75,13 +81,51 @@ class PrayerTimesCoordinator(DataUpdateCoordinator[PrayerTimesData]):
         """Fetch a new local date once, retaining valid data for the current date."""
         requested_date = self._date_provider(self._timezone)
         if self.data is not None and self.data.date == requested_date:
+            self._schedule_next_midnight_refresh()
             return self.data
 
         try:
-            return await self._api_client.async_get_prayer_times(requested_date)
+            data = await self._api_client.async_get_prayer_times(requested_date)
         except PrayerTimesApiConnectionError as err:
             raise UpdateFailed(f"Unable to reach azanAPI: {err}") from err
         except PrayerTimesApiResponseError as err:
             raise UpdateFailed(f"Invalid azanAPI response: {err}") from err
         except PrayerTimesApiError as err:
             raise UpdateFailed(f"azanAPI request failed: {err}") from err
+        self._schedule_next_midnight_refresh()
+        return data
+
+    @callback
+    def _schedule_next_midnight_refresh(self) -> None:
+        """Schedule one refresh at the next midnight in the configured timezone."""
+        if self._unsub_midnight_refresh is not None:
+            self._unsub_midnight_refresh()
+
+        next_midnight = datetime.combine(
+            self._date_provider(self._timezone) + timedelta(days=1),
+            time.min,
+            tzinfo=self._timezone,
+        )
+        self._unsub_midnight_refresh = self._schedule_at(
+            self.hass, self._async_handle_midnight_refresh, next_midnight
+        )
+
+    @callback
+    def _async_handle_midnight_refresh(self, now: datetime) -> None:
+        """Request an API refresh when the configured local date changes."""
+        self.hass.async_create_task(self._async_refresh_after_midnight())
+
+    async def _async_refresh_after_midnight(self) -> None:
+        """Refresh at midnight and retain a future rollover schedule after failures."""
+        try:
+            await self.async_request_refresh()
+        except Exception:
+            self._schedule_next_midnight_refresh()
+            raise
+
+    @callback
+    def async_cancel_midnight_refresh(self) -> None:
+        """Cancel the pending midnight callback while unloading the entry."""
+        if self._unsub_midnight_refresh is not None:
+            self._unsub_midnight_refresh()
+            self._unsub_midnight_refresh = None

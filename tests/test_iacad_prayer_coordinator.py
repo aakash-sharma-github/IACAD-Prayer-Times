@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import sys
 import unittest
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -19,6 +19,7 @@ sys.modules.setdefault("iacad_prayer", package)
 homeassistant = ModuleType("homeassistant")
 config_entries = ModuleType("homeassistant.config_entries")
 core = ModuleType("homeassistant.core")
+event_helper = ModuleType("homeassistant.helpers.event")
 update_coordinator = ModuleType("homeassistant.helpers.update_coordinator")
 
 
@@ -30,8 +31,12 @@ class FakeDataUpdateCoordinator:
         return cls
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.hass = args[0]
         self.data = None
         self.update_interval = kwargs["update_interval"]
+
+    async def async_request_refresh(self) -> None:
+        self.data = await self._async_update_data()
 
 
 class FakeUpdateFailed(Exception):
@@ -40,12 +45,15 @@ class FakeUpdateFailed(Exception):
 
 config_entries.ConfigEntry = object
 core.HomeAssistant = object
+core.callback = lambda function: function
+event_helper.async_track_point_in_time = lambda *args: lambda: None
 update_coordinator.DataUpdateCoordinator = FakeDataUpdateCoordinator
 update_coordinator.UpdateFailed = FakeUpdateFailed
 sys.modules.setdefault("homeassistant", homeassistant)
 sys.modules.setdefault("homeassistant.config_entries", config_entries)
 sys.modules.setdefault("homeassistant.core", core)
 sys.modules.setdefault("homeassistant.helpers", ModuleType("homeassistant.helpers"))
+sys.modules.setdefault("homeassistant.helpers.event", event_helper)
 sys.modules.setdefault("homeassistant.helpers.update_coordinator", update_coordinator)
 
 from iacad_prayer.api import PrayerTimesApiConnectionError
@@ -119,6 +127,29 @@ class FakeApiClient:
         return self.result
 
 
+class FakeScheduler:
+    """Capture one-shot midnight schedules without Home Assistant's event loop."""
+
+    def __init__(self) -> None:
+        self.scheduled: list[tuple[object, object, datetime]] = []
+        self.cancelled = 0
+
+    def __call__(self, hass: object, callback: object, when: datetime):
+        self.scheduled.append((hass, callback, when))
+
+        def cancel() -> None:
+            self.cancelled += 1
+
+        return cancel
+
+
+class FakeHass:
+    """Minimal Home Assistant task scheduler."""
+
+    def async_create_task(self, coroutine: Any) -> None:
+        asyncio.run(coroutine)
+
+
 class PrayerTimesCoordinatorTest(unittest.TestCase):
     """Verify caching, rollover, and error availability behavior."""
 
@@ -180,3 +211,74 @@ class PrayerTimesCoordinatorTest(unittest.TestCase):
 
         with self.assertRaises(FakeUpdateFailed):
             asyncio.run(coordinator._async_update_data())
+
+    def test_schedules_the_next_configured_local_midnight_after_refresh(self) -> None:
+        current_date = date(2026, 9, 24)
+        scheduler = FakeScheduler()
+        coordinator = PrayerTimesCoordinator(
+            FakeHass(),
+            FakeEntry(),
+            api_client=FakeApiClient(prayer_times_data(current_date)),
+            date_provider=lambda _: current_date,
+            schedule_at=scheduler,
+        )
+
+        asyncio.run(coordinator._async_update_data())
+
+        self.assertEqual(
+            scheduler.scheduled[0][2],
+            datetime(2026, 9, 25, 0, 0, tzinfo=scheduler.scheduled[0][2].tzinfo),
+        )
+        self.assertEqual(scheduler.scheduled[0][2].tzinfo.key, "Asia/Dubai")
+
+    def test_midnight_callback_fetches_the_new_local_date_and_reschedules(self) -> None:
+        current_date = date(2026, 9, 25)
+        scheduler = FakeScheduler()
+        api_client = FakeApiClient(prayer_times_data(date(2026, 9, 25)))
+        coordinator = PrayerTimesCoordinator(
+            FakeHass(),
+            FakeEntry(),
+            api_client=api_client,
+            date_provider=lambda _: current_date,
+            schedule_at=scheduler,
+        )
+        coordinator.data = prayer_times_data(date(2026, 9, 24))
+
+        asyncio.run(coordinator._async_refresh_after_midnight())
+
+        self.assertEqual(api_client.requested_dates, [date(2026, 9, 25)])
+        self.assertGreaterEqual(len(scheduler.scheduled), 1)
+
+    def test_cancels_the_midnight_callback_on_unload(self) -> None:
+        current_date = date(2026, 9, 24)
+        scheduler = FakeScheduler()
+        coordinator = PrayerTimesCoordinator(
+            FakeHass(),
+            FakeEntry(),
+            api_client=FakeApiClient(prayer_times_data(current_date)),
+            date_provider=lambda _: current_date,
+            schedule_at=scheduler,
+        )
+        asyncio.run(coordinator._async_update_data())
+
+        coordinator.async_cancel_midnight_refresh()
+
+        self.assertEqual(scheduler.cancelled, 1)
+
+    def test_midnight_failure_still_schedules_the_following_local_midnight(
+        self,
+    ) -> None:
+        current_date = date(2026, 9, 25)
+        scheduler = FakeScheduler()
+        coordinator = PrayerTimesCoordinator(
+            FakeHass(),
+            FakeEntry(),
+            api_client=FakeApiClient(PrayerTimesApiConnectionError("offline")),
+            date_provider=lambda _: current_date,
+            schedule_at=scheduler,
+        )
+
+        with self.assertRaises(FakeUpdateFailed):
+            asyncio.run(coordinator._async_refresh_after_midnight())
+
+        self.assertEqual(scheduler.scheduled[0][2].date(), date(2026, 9, 26))
