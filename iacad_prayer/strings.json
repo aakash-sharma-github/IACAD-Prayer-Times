@@ -31,6 +31,13 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "fajr_active": {"name": "Fajr active"},
+      "dhuhr_active": {"name": "Dhuhr active"},
+      "asr_active": {"name": "Asr active"},
+      "maghrib_active": {"name": "Maghrib active"},
+      "isha_active": {"name": "Isha active"}
+    },
     "sensor": {
       "fajr": {"name": "Fajr"},
       "sunrise": {"name": "Sunrise"},
