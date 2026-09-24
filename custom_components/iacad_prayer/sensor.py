@@ -36,6 +36,14 @@ class PrayerTimeSensorEntityDescription(SensorEntityDescription):
     prayer_key: str
 
 
+@dataclass(frozen=True, kw_only=True)
+class PrayerClockTimeSensorEntityDescription(SensorEntityDescription):
+    """Describe a display-friendly prayer or solar-event clock-time sensor."""
+
+    prayer_key: str
+    use_azan_time: bool = False
+
+
 SENSOR_DESCRIPTIONS: Final = (
     PrayerTimeSensorEntityDescription(
         key="fajr",
@@ -119,6 +127,45 @@ REMAINING_SENSOR_DESCRIPTIONS: Final = (
     ),
 )
 
+CLOCK_TIME_SENSOR_DESCRIPTIONS: Final = (
+    PrayerClockTimeSensorEntityDescription(
+        key="fajr_time",
+        translation_key="fajr_time",
+        prayer_key="fajr",
+        use_azan_time=True,
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="sunrise_time", translation_key="sunrise_time", prayer_key="sunrise"
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="dhuhr_time",
+        translation_key="dhuhr_time",
+        prayer_key="dhuhr",
+        use_azan_time=True,
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="asr_time",
+        translation_key="asr_time",
+        prayer_key="asr",
+        use_azan_time=True,
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="sunset_time", translation_key="sunset_time", prayer_key="sunset"
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="maghrib_time",
+        translation_key="maghrib_time",
+        prayer_key="maghrib",
+        use_azan_time=True,
+    ),
+    PrayerClockTimeSensorEntityDescription(
+        key="isha_time",
+        translation_key="isha_time",
+        prayer_key="isha",
+        use_azan_time=True,
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -134,6 +181,10 @@ async def async_setup_entry(
     async_add_entities(
         PrayerTimeRemainingSensor(coordinator, entry.entry_id, description)
         for description in REMAINING_SENSOR_DESCRIPTIONS
+    )
+    async_add_entities(
+        PrayerClockTimeSensor(coordinator, entry.entry_id, description)
+        for description in CLOCK_TIME_SENSOR_DESCRIPTIONS
     )
 
 
@@ -218,3 +269,38 @@ class PrayerTimeRemainingSensor(PrayerTimeSensor):
         while event < now:
             event += timedelta(days=1)
         return event
+
+
+class PrayerClockTimeSensor(CoordinatorEntity[PrayerTimesCoordinator], SensorEntity):
+    """Expose a local HH:MM string for dashboards and quick visual checks."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    entity_description: PrayerClockTimeSensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: PrayerTimesCoordinator,
+        entry_id: str,
+        description: PrayerClockTimeSensorEntityDescription,
+    ) -> None:
+        """Initialize a coordinator-backed clock-time sensor."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        self._attr_unique_id = f"{entry_id}_{description.key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry_id)},
+            manufacturer="Aakash Sharma",
+            model="IACAD Prayer Times",
+            name="IACAD Prayer Times",
+        )
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the final prayer or calculated solar-event time as HH:MM."""
+        if self.coordinator.data is None:
+            return None
+        data = self.coordinator.data
+        if self.entity_description.use_azan_time:
+            return data.azan_times[self.entity_description.prayer_key]
+        return data.calculated_times[self.entity_description.prayer_key]

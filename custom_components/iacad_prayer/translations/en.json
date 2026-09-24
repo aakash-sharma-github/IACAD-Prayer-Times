@@ -1,75 +1,76 @@
 {
-  "title": "IACAD Prayer Times",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Set up IACAD Prayer Times",
-        "description": "Enter the location and calculation settings used for prayer times.",
-        "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude",
-          "timezone": "Timezone",
-          "calculation_method": "Calculation method",
-          "madhab": "Madhab",
-          "high_latitude_rule": "High-latitude rule"
+    "title": "IACAD Prayer Times",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Set up IACAD Prayer Times",
+                "description": "Enter the location and calculation settings used for prayer times.",
+                "data": {
+                    "latitude": "Latitude",
+                    "longitude": "Longitude",
+                    "timezone": "Timezone",
+                    "calculation_method": "Calculation method",
+                    "madhab": "Madhab",
+                    "high_latitude_rule": "High-latitude rule"
+                },
+                "data_description": {
+                    "timezone": "Use an IANA timezone, such as Asia/Dubai."
+                }
+            }
         },
-        "data_description": {
-          "timezone": "Use an IANA timezone, such as Asia/Dubai."
-        }
-      }
-    },
-    "abort": {
-      "already_configured": "This prayer-time configuration is already set up."
-    },
-    "error": {
-      "invalid_timezone": "Enter a valid IANA timezone."
-    }
-  },
-  "device": {
-    "prayer_times": {
-      "name": "IACAD Prayer Times"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Update IACAD Prayer Times",
-        "description": "Change the location or calculation settings used for prayer times.",
-        "data": {
-          "latitude": "Latitude",
-          "longitude": "Longitude",
-          "timezone": "Timezone",
-          "calculation_method": "Calculation method",
-          "madhab": "Madhab",
-          "high_latitude_rule": "High-latitude rule"
+        "abort": {
+            "already_configured": "This prayer-time configuration is already set up."
         },
-        "data_description": {
-          "timezone": "Use an IANA timezone, such as Asia/Dubai."
-        }
-      }
-    }
-  },
-  "entity": {
-    "binary_sensor": {
-      "fajr_active": {"name": "Fajr active"},
-      "dhuhr_active": {"name": "Dhuhr active"},
-      "asr_active": {"name": "Asr active"},
-      "maghrib_active": {"name": "Maghrib active"},
-      "isha_active": {"name": "Isha active"}
+        "error": {"invalid_timezone": "Enter a valid IANA timezone."}
     },
-    "sensor": {
-      "fajr": {"name": "Fajr"},
-      "sunrise": {"name": "Sunrise"},
-      "dhuhr": {"name": "Dhuhr"},
-      "asr": {"name": "Asr"},
-      "sunset": {"name": "Sunset"},
-      "maghrib": {"name": "Maghrib"},
-      "isha": {"name": "Isha"},
-      "fajr_remaining": {"name": "Fajr remaining"},
-      "dhuhr_remaining": {"name": "Dhuhr remaining"},
-      "asr_remaining": {"name": "Asr remaining"},
-      "maghrib_remaining": {"name": "Maghrib remaining"},
-      "isha_remaining": {"name": "Isha remaining"}
+    "device": {"prayer_times": {"name": "IACAD Prayer Times"}},
+    "options": {
+        "step": {
+            "init": {
+                "title": "Update IACAD Prayer Times",
+                "description": "Change the location or calculation settings used for prayer times.",
+                "data": {
+                    "latitude": "Latitude",
+                    "longitude": "Longitude",
+                    "timezone": "Timezone",
+                    "calculation_method": "Calculation method",
+                    "madhab": "Madhab",
+                    "high_latitude_rule": "High-latitude rule"
+                },
+                "data_description": {
+                    "timezone": "Use an IANA timezone, such as Asia/Dubai."
+                }
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "fajr_active": {"name": "Fajr active"},
+            "dhuhr_active": {"name": "Dhuhr active"},
+            "asr_active": {"name": "Asr active"},
+            "maghrib_active": {"name": "Maghrib active"},
+            "isha_active": {"name": "Isha active"}
+        },
+        "sensor": {
+            "fajr": {"name": "Fajr"},
+            "sunrise": {"name": "Sunrise"},
+            "dhuhr": {"name": "Dhuhr"},
+            "asr": {"name": "Asr"},
+            "sunset": {"name": "Sunset"},
+            "maghrib": {"name": "Maghrib"},
+            "isha": {"name": "Isha"},
+            "fajr_time": {"name": "Fajr time"},
+            "sunrise_time": {"name": "Sunrise time"},
+            "dhuhr_time": {"name": "Dhuhr time"},
+            "asr_time": {"name": "Asr time"},
+            "sunset_time": {"name": "Sunset time"},
+            "maghrib_time": {"name": "Maghrib time"},
+            "isha_time": {"name": "Isha time"},
+            "fajr_remaining": {"name": "Fajr remaining"},
+            "dhuhr_remaining": {"name": "Dhuhr remaining"},
+            "asr_remaining": {"name": "Asr remaining"},
+            "maghrib_remaining": {"name": "Maghrib remaining"},
+            "isha_remaining": {"name": "Isha remaining"}
+        }
     }
-  }
 }

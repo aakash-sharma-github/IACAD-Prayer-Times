@@ -90,8 +90,10 @@ sys.modules.setdefault("iacad_prayer.coordinator", coordinator_module)
 
 from iacad_prayer.models import PrayerTimesData
 from iacad_prayer.sensor import (
+    CLOCK_TIME_SENSOR_DESCRIPTIONS,
     REMAINING_SENSOR_DESCRIPTIONS,
     SENSOR_DESCRIPTIONS,
+    PrayerClockTimeSensor,
     PrayerTimeRemainingSensor,
     PrayerTimeSensor,
 )
@@ -178,6 +180,61 @@ class PrayerTimeSensorTest(unittest.TestCase):
                 "isha_remaining",
             ],
         )
+
+    def test_defines_seven_display_friendly_clock_time_sensors(self) -> None:
+        self.assertEqual(
+            [description.key for description in CLOCK_TIME_SENSOR_DESCRIPTIONS],
+            [
+                "fajr_time",
+                "sunrise_time",
+                "dhuhr_time",
+                "asr_time",
+                "sunset_time",
+                "maghrib_time",
+                "isha_time",
+            ],
+        )
+
+    def test_clock_time_sensors_use_final_azan_times_and_solar_calculations(
+        self,
+    ) -> None:
+        adjusted_data = PrayerTimesData.from_api_response(
+            {
+                "date": "2026-09-24",
+                "timezone": "Asia/Dubai",
+                "coordinates": {"latitude": 25.2048, "longitude": 55.2708},
+                "calculation_method": "iacad_dubai",
+                "madhab": "shafi",
+                "high_latitude_rule": "middle_of_the_night",
+                "calculated_times": dict(DATA.calculated_times),
+                "azan_times": {**DATA.azan_times, "isha": "19:36"},
+                "adjustments_minutes": {**DATA.adjustments_minutes, "isha": 2},
+            }
+        )
+        isha = PrayerClockTimeSensor(
+            coordinator_with_data(adjusted_data),
+            "entry-id",
+            CLOCK_TIME_SENSOR_DESCRIPTIONS[6],
+        )
+        sunrise = PrayerClockTimeSensor(
+            coordinator_with_data(adjusted_data),
+            "entry-id",
+            CLOCK_TIME_SENSOR_DESCRIPTIONS[1],
+        )
+
+        self.assertEqual(isha.unique_id, "entry-id_isha_time")
+        self.assertEqual(isha.native_value, "19:36")
+        self.assertEqual(sunrise.native_value, "06:04")
+
+    def test_clock_time_sensor_is_unavailable_without_coordinator_data(self) -> None:
+        sensor = PrayerClockTimeSensor(
+            coordinator_with_data(None),
+            "entry-id",
+            CLOCK_TIME_SENSOR_DESCRIPTIONS[0],
+        )
+
+        self.assertIsNone(sensor.native_value)
+        self.assertFalse(sensor.available)
 
     def test_remaining_time_handles_before_at_and_after_prayer(self) -> None:
         sensor = PrayerTimeRemainingSensor(
