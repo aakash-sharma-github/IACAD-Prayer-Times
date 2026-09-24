@@ -88,6 +88,39 @@ To test the full integration:
 4. If setup fails, inspect **Settings > System > Logs** for entries under
    `custom_components.iacad_prayer`.
 
+## Release acceptance checklist
+
+Perform these checks in a real Home Assistant installation before publishing a
+release. They intentionally cover the parts that unit tests cannot validate in
+your own network, location, HACS installation, media player, and timezone.
+
+- [ ] Run `ruff check custom_components tests` and
+  `python3 -m unittest discover -s tests -v` in this repository.
+- [ ] Confirm the GitHub **Validate Home Assistant integration** workflow is
+  green for the release commit.
+- [ ] In HACS, download the intended version and restart Home Assistant.
+- [ ] Add **Adhan Prayer Time** in **Settings > Devices & services**. The
+  configuration form must open without a 500 error and accept a valid IANA
+  timezone such as `Asia/Dubai`.
+- [ ] Confirm the device is called **Adhan Prayer Time** and the existing
+  `iacad_prayer` entity IDs remain available after an upgrade.
+- [ ] Check the seven `* Time` sensors show `HH:MM`. Fajr, Dhuhr, Asr,
+  Maghrib, and Isha must use the API's final Azan time; Sunrise and Sunset use
+  their calculated solar times.
+- [ ] Change one value through **Configure** and confirm the integration reloads
+  and its displayed values update.
+- [ ] At one upcoming final Azan time, verify its `* Active` binary sensor is
+  off immediately before the time, on for the next 60 seconds, then off again.
+- [ ] Use **Developer tools > Actions** to test audio playback, then confirm the
+  Azan automation has one trace when its corresponding `* Active` sensor
+  changes to `on`.
+- [ ] Download diagnostics and confirm latitude and longitude are redacted.
+- [ ] In HACS, confirm the displayed version matches the GitHub release tag,
+  not only a commit hash.
+
+If a release fails any check, use HACS to download the previous release and
+restart Home Assistant before investigating the issue.
+
 ## Entities
 
 Each config entry creates:
@@ -213,18 +246,18 @@ For every release, update all three version references together:
 2. Add a matching `## [X.Y.Z]` section at the top of `CHANGELOG.md`.
 3. Commit and push the release-ready changes.
 4. Create and push an annotated matching tag. The current release is
-   `v0.1.1`:
+   `v0.1.2`:
 
    ```bash
-   git tag -a v0.1.1 -m "Adhan Prayer Time v0.1.1"
-   git push origin v0.1.1
+   git tag -a v0.1.2 -m "Adhan Prayer Time v0.1.2"
+   git push origin v0.1.2
    ```
 
-5. On GitHub, create a release from `v0.1.1`, use the corresponding
+5. On GitHub, create a release from `v0.1.2`, use the corresponding
    `CHANGELOG.md` section as its notes, and publish it.
-6. In HACS, select **Download** for the integration and choose `v0.1.1`.
+6. In HACS, select **Download** for the integration and choose `v0.1.2`.
 
-For example, the next bug-fix or documentation release after `0.1.1` is
-`0.1.2`; the next backward-compatible feature release is `0.2.0`. HACS
+For example, the next bug-fix or documentation release after `0.1.2` is
+`0.1.3`; the next backward-compatible feature release is `0.2.0`. HACS
 shows a commit when the repository has no GitHub release. Repository publishing
 is intentionally not performed by this integration.
