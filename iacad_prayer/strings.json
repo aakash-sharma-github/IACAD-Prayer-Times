@@ -38,7 +38,12 @@
       "asr": {"name": "Asr"},
       "sunset": {"name": "Sunset"},
       "maghrib": {"name": "Maghrib"},
-      "isha": {"name": "Isha"}
+      "isha": {"name": "Isha"},
+      "fajr_remaining": {"name": "Fajr remaining"},
+      "dhuhr_remaining": {"name": "Dhuhr remaining"},
+      "asr_remaining": {"name": "Asr remaining"},
+      "maghrib_remaining": {"name": "Maghrib remaining"},
+      "isha_remaining": {"name": "Isha remaining"}
     }
   }
 }

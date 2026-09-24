@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Final
 from zoneinfo import ZoneInfo
 
@@ -14,6 +15,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -22,6 +24,9 @@ from .coordinator import PrayerTimesCoordinator
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
+
+
+PARALLEL_UPDATES = 0
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -76,6 +81,44 @@ SENSOR_DESCRIPTIONS: Final = (
     ),
 )
 
+REMAINING_SENSOR_DESCRIPTIONS: Final = (
+    PrayerTimeSensorEntityDescription(
+        key="fajr_remaining",
+        translation_key="fajr_remaining",
+        prayer_key="fajr",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+    PrayerTimeSensorEntityDescription(
+        key="dhuhr_remaining",
+        translation_key="dhuhr_remaining",
+        prayer_key="dhuhr",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+    PrayerTimeSensorEntityDescription(
+        key="asr_remaining",
+        translation_key="asr_remaining",
+        prayer_key="asr",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+    PrayerTimeSensorEntityDescription(
+        key="maghrib_remaining",
+        translation_key="maghrib_remaining",
+        prayer_key="maghrib",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+    PrayerTimeSensorEntityDescription(
+        key="isha_remaining",
+        translation_key="isha_remaining",
+        prayer_key="isha",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="min",
+    ),
+)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -87,6 +130,10 @@ async def async_setup_entry(
     async_add_entities(
         PrayerTimeSensor(coordinator, entry.entry_id, description)
         for description in SENSOR_DESCRIPTIONS
+    )
+    async_add_entities(
+        PrayerTimeRemainingSensor(coordinator, entry.entry_id, description)
+        for description in REMAINING_SENSOR_DESCRIPTIONS
     )
 
 
@@ -125,3 +172,49 @@ class PrayerTimeSensor(CoordinatorEntity[PrayerTimesCoordinator], SensorEntity):
         return datetime.fromisoformat(
             f"{self.coordinator.data.date.isoformat()}T{event_time}"
         ).replace(tzinfo=ZoneInfo(self.coordinator.data.timezone))
+
+
+class PrayerTimeRemainingSensor(PrayerTimeSensor):
+    """Expose minutes until the next occurrence of one Azan prayer."""
+
+    _unsub_timer: Callable[[], None] | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """Refresh the duration state each minute without an API request."""
+        await super().async_added_to_hass()
+        self._unsub_timer = async_track_time_interval(
+            self.hass, self._async_handle_time_change, timedelta(minutes=1)
+        )
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe the local timer when the entity is removed."""
+        if self._unsub_timer is not None:
+            self._unsub_timer()
+            self._unsub_timer = None
+        await super().async_will_remove_from_hass()
+
+    async def _async_handle_time_change(self, now: datetime) -> None:
+        """Write the locally recalculated remaining duration."""
+        self.async_write_ha_state()
+
+    @property
+    def native_value(self) -> int | None:
+        """Return whole minutes until the next local occurrence of this prayer."""
+        if self.coordinator.data is None:
+            return None
+        now = datetime.now(ZoneInfo(self.coordinator.data.timezone))
+        prayer_time = self._next_prayer_time(now)
+        return max(0, int((prayer_time - now).total_seconds() // 60))
+
+    def _next_prayer_time(self, now: datetime) -> datetime:
+        """Return today's or tomorrow's occurrence from coordinator prayer data."""
+        assert self.coordinator.data is not None
+        event_time = self.coordinator.data.calculated_times[
+            self.entity_description.prayer_key
+        ]
+        event = datetime.fromisoformat(
+            f"{self.coordinator.data.date.isoformat()}T{event_time}"
+        ).replace(tzinfo=ZoneInfo(self.coordinator.data.timezone))
+        while event < now:
+            event += timedelta(days=1)
+        return event

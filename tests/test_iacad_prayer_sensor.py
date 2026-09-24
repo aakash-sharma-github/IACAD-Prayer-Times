@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Any
+from zoneinfo import ZoneInfo
 
 CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
@@ -23,6 +24,7 @@ config_entries = ModuleType("homeassistant.config_entries")
 core = ModuleType("homeassistant.core")
 device_registry = ModuleType("homeassistant.helpers.device_registry")
 entity_platform = ModuleType("homeassistant.helpers.entity_platform")
+event_helper = ModuleType("homeassistant.helpers.event")
 update_coordinator = ModuleType("homeassistant.helpers.update_coordinator")
 
 
@@ -33,6 +35,7 @@ class FakeSensorEntityDescription:
     key: str
     translation_key: str | None = None
     device_class: str | None = None
+    native_unit_of_measurement: str | None = None
 
 
 class FakeCoordinatorEntity:
@@ -59,7 +62,7 @@ class FakeSensorEntity:
 
 
 sensor_component.SensorDeviceClass = type(
-    "SensorDeviceClass", (), {"TIMESTAMP": "timestamp"}
+    "SensorDeviceClass", (), {"DURATION": "duration", "TIMESTAMP": "timestamp"}
 )
 sensor_component.SensorEntity = FakeSensorEntity
 sensor_component.SensorEntityDescription = FakeSensorEntityDescription
@@ -67,6 +70,7 @@ config_entries.ConfigEntry = object
 core.HomeAssistant = object
 device_registry.DeviceInfo = dict
 entity_platform.AddEntitiesCallback = object
+event_helper.async_track_time_interval = lambda *args: lambda: None
 update_coordinator.CoordinatorEntity = FakeCoordinatorEntity
 sys.modules.setdefault("homeassistant", homeassistant)
 sys.modules.setdefault("homeassistant.components", components)
@@ -76,6 +80,7 @@ sys.modules.setdefault("homeassistant.core", core)
 sys.modules.setdefault("homeassistant.helpers", ModuleType("homeassistant.helpers"))
 sys.modules.setdefault("homeassistant.helpers.device_registry", device_registry)
 sys.modules.setdefault("homeassistant.helpers.entity_platform", entity_platform)
+sys.modules.setdefault("homeassistant.helpers.event", event_helper)
 sys.modules.setdefault("homeassistant.helpers.update_coordinator", update_coordinator)
 
 coordinator_module = ModuleType("iacad_prayer.coordinator")
@@ -83,7 +88,12 @@ coordinator_module.PrayerTimesCoordinator = object
 sys.modules.setdefault("iacad_prayer.coordinator", coordinator_module)
 
 from iacad_prayer.models import PrayerTimesData
-from iacad_prayer.sensor import SENSOR_DESCRIPTIONS, PrayerTimeSensor
+from iacad_prayer.sensor import (
+    REMAINING_SENSOR_DESCRIPTIONS,
+    SENSOR_DESCRIPTIONS,
+    PrayerTimeRemainingSensor,
+    PrayerTimeSensor,
+)
 
 
 def coordinator_with_data(data: PrayerTimesData | None) -> Any:
@@ -155,3 +165,45 @@ class PrayerTimeSensorTest(unittest.TestCase):
 
         self.assertIsNone(sensor.native_value)
         self.assertFalse(sensor.available)
+
+    def test_defines_five_remaining_prayer_sensors(self) -> None:
+        self.assertEqual(
+            [description.key for description in REMAINING_SENSOR_DESCRIPTIONS],
+            [
+                "fajr_remaining",
+                "dhuhr_remaining",
+                "asr_remaining",
+                "maghrib_remaining",
+                "isha_remaining",
+            ],
+        )
+
+    def test_remaining_time_handles_before_at_and_after_prayer(self) -> None:
+        sensor = PrayerTimeRemainingSensor(
+            coordinator_with_data(DATA), "entry-id", REMAINING_SENSOR_DESCRIPTIONS[1]
+        )
+        timezone = ZoneInfo("Asia/Dubai")
+
+        self.assertEqual(
+            sensor._next_prayer_time(datetime(2026, 9, 24, 12, 0, tzinfo=timezone)),
+            datetime(2026, 9, 24, 12, 15, tzinfo=timezone),
+        )
+        self.assertEqual(
+            sensor._next_prayer_time(datetime(2026, 9, 24, 12, 15, tzinfo=timezone)),
+            datetime(2026, 9, 24, 12, 15, tzinfo=timezone),
+        )
+        self.assertEqual(
+            sensor._next_prayer_time(datetime(2026, 9, 24, 12, 16, tzinfo=timezone)),
+            datetime(2026, 9, 25, 12, 15, tzinfo=timezone),
+        )
+
+    def test_remaining_time_after_midnight_uses_the_next_occurrence(self) -> None:
+        sensor = PrayerTimeRemainingSensor(
+            coordinator_with_data(DATA), "entry-id", REMAINING_SENSOR_DESCRIPTIONS[0]
+        )
+        timezone = ZoneInfo("Asia/Dubai")
+
+        self.assertEqual(
+            sensor._next_prayer_time(datetime(2026, 9, 25, 0, 5, tzinfo=timezone)),
+            datetime(2026, 9, 25, 4, 50, tzinfo=timezone),
+        )
