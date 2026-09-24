@@ -6,8 +6,11 @@ import asyncio
 import importlib
 import sys
 import unittest
+from pathlib import Path
 from types import ModuleType
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).parents[1] / "custom_components"))
 
 homeassistant = ModuleType("homeassistant")
 config_entries = ModuleType("homeassistant.config_entries")

@@ -11,7 +11,7 @@ from types import ModuleType
 from typing import Any
 from zoneinfo import ZoneInfo
 
-CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
+CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1] / "custom_components"
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
 package = ModuleType("iacad_prayer")
 package.__path__ = [str(INTEGRATION_PATH)]

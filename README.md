@@ -27,7 +27,7 @@ Assistant's shared HTTP client.
 
 ## Manual installation
 
-1. Copy the `iacad_prayer` directory into
+1. Copy `custom_components/iacad_prayer` into
    `<Home Assistant config>/custom_components/iacad_prayer`.
 2. Restart Home Assistant.
 3. Add **IACAD Prayer Times** from **Settings > Devices & services**.
@@ -44,6 +44,23 @@ The configuration flow asks for:
 
 All settings can later be changed through the integration's **Configure**
 option. Saving options reloads the entry automatically.
+
+## Verify in Home Assistant
+
+After setup, open **Settings > Devices & services > IACAD Prayer Times** and
+check that its entities are available. Confirm that timestamp values match the
+selected location, timezone, and calculation method.
+
+To test the full integration:
+
+1. Change a setting through **Configure** and confirm the entry reloads and the
+   values update.
+2. Download diagnostics from the integration menu and verify that coordinates
+   are redacted.
+3. Use **Developer tools > States** to observe an `* Active` binary sensor at a
+   final Azan time. It is on for one minute only.
+4. If setup fails, inspect **Settings > System > Logs** for entries under
+   `custom_components.iacad_prayer`.
 
 ## Entities
 
@@ -67,7 +84,7 @@ diagnostics redact latitude and longitude.
 
 For API details, see the [azanAPI documentation](https://api.aakashsharma.com.np/docs).
 Report integration issues at the configured
-[issue tracker](https://github.com/aakash-sharma-github/Prayer_time_api/issues).
+[issue tracker](https://github.com/aakash-sharma-github/IACAD-Prayer-Times/issues).
 
 ## Releases and versioning
 

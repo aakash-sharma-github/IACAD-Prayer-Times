@@ -5,7 +5,8 @@ import sys
 import unittest
 from pathlib import Path
 
-CUSTOM_COMPONENTS_PATH = Path(__file__).parents[1]
+REPOSITORY_ROOT = Path(__file__).parents[1]
+CUSTOM_COMPONENTS_PATH = REPOSITORY_ROOT / "custom_components"
 INTEGRATION_PATH = CUSTOM_COMPONENTS_PATH / "iacad_prayer"
 package = type(sys)("iacad_prayer")
 package.__path__ = [str(INTEGRATION_PATH)]
@@ -30,26 +31,39 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["integration_type"], "service")
         self.assertEqual(manifest["documentation"], "https://www.aakashsharma.com.np")
+        self.assertEqual(
+            manifest["issue_tracker"],
+            "https://github.com/aakash-sharma-github/IACAD-Prayer-Times/issues",
+        )
 
     def test_hacs_metadata_declares_the_existing_repository_layout(self) -> None:
-        hacs = json.loads((CUSTOM_COMPONENTS_PATH / "hacs.json").read_text())
+        hacs = json.loads((REPOSITORY_ROOT / "hacs.json").read_text())
 
-        self.assertEqual(hacs, {"content_in_root": True})
+        self.assertEqual(hacs, {})
 
     def test_hacs_brand_icon_is_a_png_asset(self) -> None:
-        icon = (CUSTOM_COMPONENTS_PATH / "brand" / "icon.png").read_bytes()
+        icon = (REPOSITORY_ROOT / "brand" / "icon.png").read_bytes()
 
         self.assertTrue(icon.startswith(b"\x89PNG\r\n\x1a\n"))
 
     def test_readme_documents_installation_and_supported_home_assistant_version(
         self,
     ) -> None:
-        readme = (CUSTOM_COMPONENTS_PATH / "README.md").read_text()
+        readme = (REPOSITORY_ROOT / "README.md").read_text()
 
         self.assertIn("Home Assistant **2025.8.0 or later**", readme)
         self.assertIn("## Install with HACS", readme)
         self.assertIn("## Manual installation", readme)
+        self.assertIn("## Verify in Home Assistant", readme)
         self.assertIn("Aakash Sharma", readme)
+
+    def test_github_workflow_runs_hacs_and_home_assistant_validation(self) -> None:
+        workflow = (
+            REPOSITORY_ROOT / ".github" / "workflows" / "validate.yml"
+        ).read_text()
+
+        self.assertIn("hacs/action@main", workflow)
+        self.assertIn("home-assistant/actions/hassfest@master", workflow)
 
     def test_translation_files_have_matching_english_content(self) -> None:
         strings = json.loads((INTEGRATION_PATH / "strings.json").read_text())
