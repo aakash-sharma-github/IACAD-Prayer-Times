@@ -1,4 +1,4 @@
-"""Unit tests for the editable IACAD Prayer Times options flow."""
+"""Unit tests for the editable Adhan Prayer Time options flow."""
 
 from __future__ import annotations
 

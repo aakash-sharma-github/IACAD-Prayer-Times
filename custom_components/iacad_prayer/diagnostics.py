@@ -1,4 +1,4 @@
-"""Diagnostics support for IACAD Prayer Times."""
+"""Diagnostics support for Adhan Prayer Time."""
 
 from __future__ import annotations
 

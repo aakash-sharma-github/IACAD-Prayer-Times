@@ -1,4 +1,4 @@
-"""Config flow for IACAD Prayer Times."""
+"""Config flow for Adhan Prayer Time."""
 
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ from .const import (
     DEFAULT_MADHAB,
     DOMAIN,
     HIGH_LATITUDE_RULES,
+    INTEGRATION_NAME,
     MADHABS,
 )
 from .validation import is_valid_timezone
@@ -49,7 +50,7 @@ DATA_SCHEMA = vol.Schema(
 
 
 class IacadPrayerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for IACAD Prayer Times."""
+    """Handle a config flow for Adhan Prayer Time."""
 
     VERSION = 1
 
@@ -72,7 +73,7 @@ class IacadPrayerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
             await self.async_set_unique_id(self._unique_id(user_input))
             self._abort_if_unique_id_configured()
-            return self.async_create_entry(title="IACAD Prayer Times", data=user_input)
+            return self.async_create_entry(title=INTEGRATION_NAME, data=user_input)
 
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA)
 

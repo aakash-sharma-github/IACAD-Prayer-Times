@@ -60,6 +60,10 @@ class FakeConfigEntries:
     ) -> None:
         self.forwarded.append((entry, platforms))
 
+    def async_update_entry(self, entry: Any, **kwargs: Any) -> None:
+        for key, value in kwargs.items():
+            setattr(entry, key, value)
+
     async def async_unload_platforms(
         self, entry: Any, platforms: tuple[str, ...]
     ) -> bool:
@@ -79,6 +83,9 @@ class FakeEntry:
 
     runtime_data: FakeCoordinator
 
+    def __init__(self, title: str = "IACAD Prayer Times") -> None:
+        self.title = title
+
 
 class SetupTest(unittest.TestCase):
     """Verify a Home Assistant restart creates a fresh coordinator safely."""
@@ -94,9 +101,18 @@ class SetupTest(unittest.TestCase):
 
         self.assertTrue(result)
         self.assertIsInstance(entry.runtime_data, FakeCoordinator)
+        self.assertEqual(entry.title, "Adhan Prayer Time")
         self.assertEqual(
             hass.config_entries.forwarded, [(entry, ("sensor", "binary_sensor"))]
         )
+
+    def test_setup_migrates_azanapi_prayer_times_title(self) -> None:
+        hass = FakeHass()
+        entry = FakeEntry("azanAPI Prayer Times")
+
+        asyncio.run(integration.async_setup_entry(hass, entry))
+
+        self.assertEqual(entry.title, "Adhan Prayer Time")
 
     def test_failed_initial_refresh_is_propagated_for_home_assistant_retry(
         self,
@@ -115,3 +131,11 @@ class SetupTest(unittest.TestCase):
 
         self.assertTrue(result)
         self.assertTrue(entry.runtime_data.cancelled)
+
+    def test_setup_keeps_a_user_renamed_config_entry_title(self) -> None:
+        hass = FakeHass()
+        entry = FakeEntry("Prayer schedule")
+
+        asyncio.run(integration.async_setup_entry(hass, entry))
+
+        self.assertEqual(entry.title, "Prayer schedule")

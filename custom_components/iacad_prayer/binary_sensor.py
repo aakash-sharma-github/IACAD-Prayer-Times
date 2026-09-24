@@ -16,7 +16,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, INTEGRATION_NAME
 from .coordinator import PrayerTimesCoordinator
 
 if TYPE_CHECKING:
@@ -90,8 +90,8 @@ class PrayerActiveBinarySensor(
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
             manufacturer="Aakash Sharma",
-            model="IACAD Prayer Times",
-            name="IACAD Prayer Times",
+            model=INTEGRATION_NAME,
+            name=INTEGRATION_NAME,
         )
 
     async def async_added_to_hass(self) -> None:

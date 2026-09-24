@@ -1,9 +1,9 @@
 {
-    "title": "IACAD Prayer Times",
+    "title": "Adhan Prayer Time",
     "config": {
         "step": {
             "user": {
-                "title": "Set up IACAD Prayer Times",
+                "title": "Set up Adhan Prayer Time",
                 "description": "Enter the location and calculation settings used for prayer times.",
                 "data": {
                     "latitude": "Latitude",
@@ -23,11 +23,11 @@
         },
         "error": {"invalid_timezone": "Enter a valid IANA timezone."}
     },
-    "device": {"prayer_times": {"name": "IACAD Prayer Times"}},
+    "device": {"prayer_times": {"name": "Adhan Prayer Time"}},
     "options": {
         "step": {
             "init": {
-                "title": "Update IACAD Prayer Times",
+                "title": "Update Adhan Prayer Time",
                 "description": "Change the location or calculation settings used for prayer times.",
                 "data": {
                     "latitude": "Latitude",

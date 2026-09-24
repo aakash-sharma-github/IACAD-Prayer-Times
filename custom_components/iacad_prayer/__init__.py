@@ -1,14 +1,16 @@
-"""IACAD Prayer Times integration."""
+"""Adhan Prayer Time integration."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import PLATFORMS
+from .const import INTEGRATION_NAME, LEGACY_INTEGRATION_NAMES, PLATFORMS
 from .coordinator import PrayerTimesCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up IACAD Prayer Times from a config entry."""
+    """Set up Adhan Prayer Time from a config entry."""
+    if entry.title in LEGACY_INTEGRATION_NAMES:
+        hass.config_entries.async_update_entry(entry, title=INTEGRATION_NAME)
     coordinator = PrayerTimesCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
@@ -17,7 +19,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload an IACAD Prayer Times config entry."""
+    """Unload Adhan Prayer Time config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         entry.runtime_data.async_cancel_midnight_refresh()

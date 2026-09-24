@@ -1,9 +1,11 @@
-"""Constants for the IACAD Prayer Times integration."""
+"""Constants for the Adhan Prayer Time integration."""
 
 from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "iacad_prayer"
+INTEGRATION_NAME: Final = "Adhan Prayer Time"
+LEGACY_INTEGRATION_NAMES: Final = ("IACAD Prayer Times", "azanAPI Prayer Times")
 PLATFORMS: Final = ("sensor", "binary_sensor")
 
 CONF_LATITUDE: Final = "latitude"

@@ -1,4 +1,4 @@
-# IACAD Prayer Times
+# Adhan Prayer Time
 
 Home Assistant custom integration for daily Islamic prayer times from the
 [azanAPI](https://api.aakashsharma.com.np). It creates timezone-aware prayer
@@ -20,17 +20,17 @@ Assistant's shared HTTP client.
 1. In HACS, select **Integrations**.
 2. Open the overflow menu, select **Custom repositories**, and add this
    repository as an **Integration**.
-3. Find **IACAD Prayer Times** in HACS and select **Download**.
+3. Find **Adhan Prayer Time** in HACS and select **Download**.
 4. Restart Home Assistant.
 5. Go to **Settings > Devices & services > Add integration**, search for
-   **IACAD Prayer Times**, and complete the configuration form.
+   **Adhan Prayer Time**, and complete the configuration form.
 
 ## Manual installation
 
 1. Copy `custom_components/iacad_prayer` into
    `<Home Assistant config>/custom_components/iacad_prayer`.
 2. Restart Home Assistant.
-3. Add **IACAD Prayer Times** from **Settings > Devices & services**.
+3. Add **Adhan Prayer Time** from **Settings > Devices & services**.
 
 ## Configuration
 
@@ -45,9 +45,20 @@ The configuration flow asks for:
 All settings can later be changed through the integration's **Configure**
 option. Saving options reloads the entry automatically.
 
+## Name migration
+
+This integration was previously displayed as **IACAD Prayer Times** and
+**azanAPI Prayer Times**. On the first setup after updating, an unchanged legacy
+integration title is migrated to **Adhan Prayer Time**. The `iacad_prayer` integration domain, existing
+entity IDs, and automation triggers are not changed.
+
+If you renamed the integration or device yourself, your chosen name is kept.
+To rename the device manually, open it in **Settings > Devices & services** and
+select the edit icon.
+
 ## Verify in Home Assistant
 
-After setup, open **Settings > Devices & services > IACAD Prayer Times** and
+After setup, open **Settings > Devices & services > Adhan Prayer Time** and
 check that its entities are available. Confirm that timestamp values match the
 selected location, timezone, and calculation method.
 

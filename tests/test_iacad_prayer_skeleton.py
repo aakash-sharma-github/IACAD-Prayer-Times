@@ -27,7 +27,7 @@ class IacadPrayerSkeletonTest(unittest.TestCase):
         manifest = json.loads((INTEGRATION_PATH / "manifest.json").read_text())
 
         self.assertEqual(manifest["domain"], "iacad_prayer")
-        self.assertEqual(manifest["name"], "IACAD Prayer Times")
+        self.assertEqual(manifest["name"], "Adhan Prayer Time")
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["integration_type"], "service")
         self.assertEqual(manifest["documentation"], "https://www.aakashsharma.com.np")

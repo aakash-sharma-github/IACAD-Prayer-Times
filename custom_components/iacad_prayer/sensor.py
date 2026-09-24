@@ -18,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, INTEGRATION_NAME
 from .coordinator import PrayerTimesCoordinator
 
 if TYPE_CHECKING:
@@ -208,8 +208,8 @@ class PrayerTimeSensor(CoordinatorEntity[PrayerTimesCoordinator], SensorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
             manufacturer="Aakash Sharma",
-            model="IACAD Prayer Times",
-            name="IACAD Prayer Times",
+            model=INTEGRATION_NAME,
+            name=INTEGRATION_NAME,
         )
 
     @property
@@ -291,8 +291,8 @@ class PrayerClockTimeSensor(CoordinatorEntity[PrayerTimesCoordinator], SensorEnt
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
             manufacturer="Aakash Sharma",
-            model="IACAD Prayer Times",
-            name="IACAD Prayer Times",
+            model=INTEGRATION_NAME,
+            name=INTEGRATION_NAME,
         )
 
     @property
